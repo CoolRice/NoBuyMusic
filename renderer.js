@@ -11,6 +11,7 @@ const closeElement = document.querySelector('#close');
 const isMac = (navigator.appVersion.indexOf("Mac")!=-1);
 if (isMac) {
     document.querySelector('.window-control').classList.add('isMac');
+    document.querySelector('#title').classList.add('isMac');
 }
 playElement.addEventListener('click', () => {
     Player.pause();

@@ -29,6 +29,10 @@ body {
     font-size: 1rem;
 }
 
+#title.isMac {
+    padding-top: 10px;
+}
+
 #time {
     font-size: 0.9rem;
 }

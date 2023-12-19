@@ -122,9 +122,9 @@ function createWindow () {
         progress = time2Seconds(play.currentTime) / time2Seconds(play.totalTime);
       }
       let title = play.title;
-      if (play?.title?.indexOf('《') >= 0 && play.title.indexOf('《') < play.title.indexOf('》')) {
-        title = play.title.split('《')[1].split('》')[0];
-      }
+      // if (play?.title?.indexOf('《') >= 0 && play.title.indexOf('《') < play.title.indexOf('》')) {
+      //   title = play.title.split('《')[1].split('》')[0];
+      // }
       const updateStr = `
         document.querySelector('#title').innerHTML = '${title || '&nbsp;'}';
         var duration = 1000;
