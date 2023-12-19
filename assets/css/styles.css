@@ -1,4 +1,7 @@
 /* styles.css */
+html {
+    font-size: 18px;
+}
 body {
     font-family: Avenir, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', 'Helvetica Neue', Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', sans-serif;
     color: black;
@@ -22,12 +25,17 @@ body {
     width: 100%;
     overflow-x: hidden;
     text-align: center;
-    padding-top: 20px;
-    font-size: 20px;
+    padding-top: 3px;
+    font-size: 1rem;
+}
+
+#time {
+    font-size: 0.9rem;
 }
 
 .window-control {
     -webkit-app-region: no-drag;
+    float: right;
 }
 
 .window-control.isMac {
@@ -52,4 +60,8 @@ body {
 
 #play-list .item {
     margin-top: 2px;
+}
+
+#progressBar {
+    margin-top: -12px;
 }

@@ -81,6 +81,5 @@ setInterval(async () => {
 
     const status = {auth, play, page}
 
-    console.log(status)
     BiliBridge.status(status);
 }, 1000);

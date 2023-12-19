@@ -38,7 +38,7 @@ minimizeElement.addEventListener('click', () => {
     Player.minimize();
 });
 
-minimizeElement.addEventListener('click', () => {
+closeElement.addEventListener('click', () => {
     Player.close();
 });
 

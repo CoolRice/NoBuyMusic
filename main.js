@@ -26,8 +26,8 @@ console.log(store.get('currentBvid'))
 
 function createWindow () {
   const mainWindow = new BrowserWindow({
-    width: 500,
-    height: 150,
+    width: 350,
+    height: 125,
     webPreferences: {
       preload: path.join(__dirname, 'preload.js')
     },
@@ -37,7 +37,9 @@ function createWindow () {
     fullscreen: false,
     maximizable: false,
   })
-  mainWindow.setWindowButtonVisibility(true)
+  if (process.platform === 'darwin') {
+    mainWindow.setWindowButtonVisibility(true)
+  }
 
   const child = new BrowserWindow({
     width: 1000,
@@ -91,20 +93,19 @@ function createWindow () {
       targetEleSelector = '.bpx-player-control-wrap .bpx-player-ctrl-prev';
     }
     const scriptString = `document.querySelector('${targetEleSelector}').click();`
-    console.log(scriptString)
+
     child.webContents.executeJavaScript(scriptString);
   }
 
   ipcMain.on('player', handleMainPlayEvent);
 
   const handleBiliEvent = (event, value) => {
-    console.log(value)
     if (value.eventName === 'status') {
       const { auth, page, play } = value.key;
       if (auth.isAuthenticated && isChildWindowShowing) {
         isChildWindowShowing = false;
         child.hide()
-      } 
+      }
       if (!auth.isAuthenticated && !isChildWindowShowing) {
         isChildWindowShowing = true;
         child.show()
@@ -125,13 +126,13 @@ function createWindow () {
         title = play.title.split('《')[1].split('》')[0];
       }
       const updateStr = `
-        document.querySelector('#title').innerText = '${title}';
+        document.querySelector('#title').innerHTML = '${title || '&nbsp;'}';
         var duration = 1000;
         if (!lineProgressBar.value()) {
           duration = 0;
         }
-        document.querySelector('#currentTime').innerText = '${play.currentTime}';
-        document.querySelector('#totalTime').innerText = '${play.totalTime}';
+        document.querySelector('#currentTime').innerHTML = '${play.currentTime || '&nbsp;'}';
+        document.querySelector('#totalTime').innerHTML = '${play.totalTime || '&nbsp;'}';
         lineProgressBar.animate(${progress}, {
           duration,
         });
