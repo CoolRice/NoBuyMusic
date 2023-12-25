@@ -62,6 +62,10 @@ body {
 .control-buttons {
     text-align: center;
     -webkit-app-region: no-drag;
+    clear: right;
+    margin-top: -5px;
+    display: inline-block;
+    width: 100%;
 }
 
 .button {

@@ -91,6 +91,8 @@ function createWindow () {
     });
   }
 
+  let prevTitle = '&nbsp;';
+
   const handleMainPlayEvent = (event, value) => {
     let targetEleSelector;
     let prevVolume;
@@ -166,12 +168,19 @@ function createWindow () {
       if (play.currentTime) {
         progress = time2Seconds(play.currentTime) / time2Seconds(play.totalTime);
       }
-      let title = play.title;
+      const title = play.title || '&nbsp;';
+      let updateStr = '';
+      if (prevTitle != title) {
+        prevTitle = title;
+        updateStr = `
+          document.querySelector('#title').innerHTML = '${title}';
+        `;
+      }
+
       // if (play?.title?.indexOf('《') >= 0 && play.title.indexOf('《') < play.title.indexOf('》')) {
       //   title = play.title.split('《')[1].split('》')[0];
       // }
-      const updateStr = `
-        document.querySelector('#title').innerHTML = '${title || '&nbsp;'}';
+      updateStr += updateStr + `
         document.querySelector('#currentTime').innerHTML = '${play.currentTime || '&nbsp;'}';
         document.querySelector('#totalTime').innerHTML = '${play.totalTime || '&nbsp;'}';
         lineProgressBar.set(${progress});
