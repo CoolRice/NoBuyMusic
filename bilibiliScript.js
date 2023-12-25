@@ -46,11 +46,7 @@ setInterval(async () => {
         if (NoBuyMusicElement) {
             const searchParams = new URLSearchParams(NoBuyMusicElement.href.substring(NoBuyMusicElement.href.indexOf('?')));
             const fid = searchParams.get('fid');
-            let playUrl = 'https://www.bilibili.com/list/ml' + fid;
-            const { lastFid, lastBvid } = BiliBridge.getLastFidAndBvid();
-            if (lastFid === fid) {
-                playUrl += '?bvid=' + lastBvid;
-            }
+            const playUrl = 'https://www.bilibili.com/list/ml' + fid;
             window.location.href = playUrl;
 
         } else {
@@ -72,6 +68,9 @@ setInterval(async () => {
         play.currentFid = window.location.href.split('?')[0].split('ml')[1];
         const searchParams = new URLSearchParams(window.location.href.substring(window.location.href.indexOf('?')));
         play.currentBvid = searchParams.get('bvid');
+        play.volume = window.player.getVolume();
+        play.isMuted = window.player.isMuted();
+
     }
 
     const page = {};
@@ -82,4 +81,4 @@ setInterval(async () => {
     const status = {auth, play, page}
 
     BiliBridge.status(status);
-}, 1000);
+}, 500);

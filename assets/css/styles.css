@@ -34,12 +34,25 @@ body {
 }
 
 #time {
+    display: inline-block;
     font-size: 0.9rem;
+}
+
+#volume {
+    display: inline-block;
+    float: right;
+    -webkit-app-region: no-drag;
+}
+
+#volumeBar {
+    width: 80px;
+    display: inline-block;
 }
 
 .window-control {
     -webkit-app-region: no-drag;
     float: right;
+    margin-top: -5px;
 }
 
 .window-control.isMac {
@@ -68,4 +81,9 @@ body {
 
 #progressBar {
     margin-top: -12px;
+}
+
+#volumeBar svg {
+    position: relative;
+    top: -11px;
 }
