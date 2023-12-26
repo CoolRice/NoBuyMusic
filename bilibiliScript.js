@@ -19,13 +19,16 @@ setInterval(async () => {
     if (isFavListPage){
         const NoBuyMusicElement = document.querySelector('a[title="NoBuyMusic"]');
         if (NoBuyMusicElement) {
-            const searchParams = new URLSearchParams(NoBuyMusicElement.href.substring(NoBuyMusicElement.href.indexOf('?')));
-            const fid = searchParams.get('fid');
-            const playUrl = 'https://www.bilibili.com/list/ml' + fid;
-            window.location.href = playUrl;
-
+            if (NoBuyMusicElement.nextSibling.innerText === '0') {
+                alert('请收藏至少1个视频后重启')
+            } else {
+                const searchParams = new URLSearchParams(NoBuyMusicElement.href.substring(NoBuyMusicElement.href.indexOf('?')));
+                const fid = searchParams.get('fid');
+                const playUrl = 'https://www.bilibili.com/list/ml' + fid;
+                window.location.href = playUrl;
+            }
         } else {
-            alert('Please Create favlist "NoBuyMusic"')
+            alert('请创建收藏夹 "NoBuyMusic"')
         }
     }
 

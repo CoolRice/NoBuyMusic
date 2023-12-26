@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain, } = require('electron');
+const { app, BrowserWindow, ipcMain, Tray, Menu } = require('electron');
 const Store = require('electron-store');
 const path = require('path');
 const fs = require('fs');
@@ -202,8 +202,22 @@ function createWindow () {
 app.whenReady().then(() => {
   createWindow()
 
+  // https://www.iconarchive.com/show/yosemite-flat-icons-by-dtafalonso/Music-icon.html
+  tray = new Tray(__dirname + '/' + 'assets/img/music.ico');
+  const contextMenu = Menu.buildFromTemplate([
+    { label: '登出账户', click: () => {
+      childWindow.webContents.session.clearStorageData();
+      childWindow.loadURL('https://www.bilibili.com')
+      store.set('latestUrl', '');
+    }},
+    { label: '退出应用', click: () => {
+      mainWindow.close();
+    }}
+  ])
+  tray.setToolTip('No Buy Music');
+  tray.setContextMenu(contextMenu);
+
   app.on('activate', function () {
-    console.log('active')
     if (BrowserWindow.getAllWindows().length === 0) {
       childWindow = null;
       createWindow();
