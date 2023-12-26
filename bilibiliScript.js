@@ -58,9 +58,12 @@ setInterval(async () => {
     const play = {};
     const isPlayMusicPage = document.querySelector('.playlist-container');
     if (isPlayMusicPage) {
-        play.title = document.querySelector('.video-title')?.innerText || '',
-        play.currentTime = document.querySelector('.bpx-player-ctrl-time-current')?.innerText || '',
-        play.totalTime = document.querySelector('.bpx-player-ctrl-time-duration')?.innerText || '',
+        play.title = document.querySelector('.video-title')?.innerText || '';
+        play.currentTime = document.querySelector('.bpx-player-ctrl-time-current')?.innerText || '';
+        if (play.currentTime === '00:10' && window.player.getQuality().nowQ != 16) {
+            window.player.requestQuality(16);
+        }
+        play.totalTime = document.querySelector('.bpx-player-ctrl-time-duration')?.innerText || '';
         play.list = JSON.parse(`["${document.querySelector('.action-list-inner')?.innerText.replaceAll('\n', '","') }"]`)
             .filter(function (item, index) {
                 return (index % 2 === 0);
