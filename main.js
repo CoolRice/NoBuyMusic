@@ -3,7 +3,8 @@ const Store = require('electron-store');
 const path = require('path');
 const fs = require('fs');
 
-let mainWindow = null
+let mainWindow = null;
+let childWindow = null;
 
 const gotTheLock = app.requestSingleInstanceLock()
 
@@ -58,7 +59,7 @@ function createWindow () {
     mainWindow.setWindowButtonVisibility(true)
   }
 
-  const child = new BrowserWindow({
+  childWindow = new BrowserWindow({
     width: 1000,
     height: 550,
     parent: mainWindow,
@@ -69,14 +70,14 @@ function createWindow () {
   });
 
   const latestUrl = store.get('latestUrl');
-  child.loadURL(latestUrl || 'https://www.bilibili.com')
-  child.webContents.on('dom-ready', () => {
-    child.webContents.executeJavaScript(content)
+  childWindow.loadURL(latestUrl || 'https://www.bilibili.com')
+  childWindow.webContents.on('dom-ready', () => {
+    childWindow.webContents.executeJavaScript(content)
   });
 
-  // child.once('ready-to-show', () => {
-  //   child.show()
-  //   // child.hide()
+  // childWindow.once('ready-to-show', () => {
+  //   childWindow.show()
+  //   // childWindow.hide()
   // })
 
   // and load the index.html of the app.
@@ -86,7 +87,7 @@ function createWindow () {
     mainWindow.webContents.openDevTools({
       mode: 'detach'
     });
-    child.webContents.openDevTools({
+    childWindow.webContents.openDevTools({
       mode: 'detach'
     });
   }
@@ -94,7 +95,6 @@ function createWindow () {
   let prevTitle = '&nbsp;';
 
   const handleMainPlayEvent = (event, value) => {
-    let targetEleSelector;
     let prevVolume;
     if ('minimize' === value.eventName) {
       mainWindow.minimize();
@@ -107,15 +107,15 @@ function createWindow () {
 
     if ('SET_VOLUME' === value.eventName) {
       const scriptString = `window.player.setVolume(${value.volumeValue});`
-      child.webContents.executeJavaScript(scriptString);
+      childWindow.webContents.executeJavaScript(scriptString);
       return;
     }
 
     if ('MUTE' === value.eventName) {
-      child.webContents.executeJavaScript('window.player.getVolume();')
+      childWindow.webContents.executeJavaScript('window.player.getVolume();')
         .then((volume) =>{
           prevVolume = volume;
-          child.webContents.executeJavaScript('window.player.setVolume(0);');
+          childWindow.webContents.executeJavaScript('window.player.setVolume(0);');
         });
       return;
     }
@@ -123,22 +123,17 @@ function createWindow () {
     if ('UNMUTE' === value.eventName) {
       const targetVolume = Number.isNaN(parseInt(prevVolume)) ? 0.3 : prevVolume;
       const scriptString = `window.player.setVolume(${targetVolume});`
-      child.webContents.executeJavaScript(scriptString);
+      childWindow.webContents.executeJavaScript(scriptString);
       return;
     }
 
     if (['PAUSE', 'PLAY'].includes(value.eventName)) {
-      targetEleSelector = '.bpx-player-control-wrap .bpx-player-ctrl-play';
-    } else if (value.eventName === 'MUTE') {
-      targetEleSelector = '.bpx-player-control-wrap .bpx-player-ctrl-volume';
+      childWindow.webContents.executeJavaScript(`window.player.${value.eventName === 'PAUSE' ? 'pause' : 'play'}();`);
     } else if (value.eventName === 'NEXT') {
-      targetEleSelector = '.bpx-player-control-wrap .bpx-player-ctrl-next';
+      childWindow.webContents.executeJavaScript(`window.player.next();`);
     } else if (value.eventName === 'PREV') {
-      targetEleSelector = '.bpx-player-control-wrap .bpx-player-ctrl-prev';
+      childWindow.webContents.executeJavaScript(`window.player.prev();`);
     }
-
-    const scriptString = `document.querySelector('${targetEleSelector}').click();`
-    child.webContents.executeJavaScript(scriptString);
   }
 
   ipcMain.on('player', handleMainPlayEvent);
@@ -148,11 +143,11 @@ function createWindow () {
       const { auth, page, play } = value.key;
       if (auth.isAuthenticated && isChildWindowShowing && !isDev()) {
         isChildWindowShowing = false;
-        child.hide()
+        childWindow.hide()
       }
       if (!auth.isAuthenticated && !isChildWindowShowing) {
         isChildWindowShowing = true;
-        child.show()
+        childWindow.show()
       }
       if (play.currentFid) {
         store.set('currentFid', play.currentFid);
@@ -208,7 +203,11 @@ app.whenReady().then(() => {
   createWindow()
 
   app.on('activate', function () {
-    if (BrowserWindow.getAllWindows().length === 0) createWindow()
+    console.log('active')
+    if (BrowserWindow.getAllWindows().length === 0) {
+      childWindow = null;
+      createWindow();
+    }
   })
 })
 

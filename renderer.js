@@ -14,13 +14,13 @@ if (isMac) {
     document.querySelector('#title').classList.add('isMac');
 }
 playElement.addEventListener('click', () => {
-    Player.pause();
+    Player.play();
     playElement.style.display = 'none';
     pauseElement.style.display = 'inline';
 });
 
 pauseElement.addEventListener('click', () => {
-    Player.play();
+    Player.pause();
     playElement.style.display = 'inline';
     pauseElement.style.display = 'none';
 });

@@ -1,27 +1,3 @@
-function getPlayUrl() {
-
-}
-
-function waitForElm(selector) {
-    return new Promise(resolve => {
-        if (document.querySelector(selector)) {
-            return resolve(document.querySelector(selector));
-        }
-
-        const observer = new MutationObserver(mutations => {
-            if (document.querySelector(selector)) {
-                resolve(document.querySelector(selector));
-                observer.disconnect();
-            }
-        });
-
-        observer.observe(document.body, {
-            childList: true,
-            subtree: true
-        });
-    });
-}
-
 setInterval(async () => {
     // landing page
     const auth = {};
@@ -32,7 +8,6 @@ setInterval(async () => {
         if (!auth.isAuthenticated) {
             window.scrollTo(document.body.scrollWidth, 0);
             document.querySelector('.header-login-entry')?.click();
-            // return;
         } else {
             const profileUrl = avatarElement.href;
             window.location.href = profileUrl + '/favlist';
