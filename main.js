@@ -176,8 +176,8 @@ function createWindow () {
       //   title = play.title.split('《')[1].split('》')[0];
       // }
       updateStr += updateStr + `
-        document.querySelector('#currentTime').innerHTML = '${play.currentTime || '&nbsp;'}';
-        document.querySelector('#totalTime').innerHTML = '${play.totalTime || '&nbsp;'}';
+        document.querySelector('#currentTime').innerHTML = '${play.currentTime || '00:00'}';
+        document.querySelector('#totalTime').innerHTML = '${play.totalTime || '00:00'}';
         lineProgressBar.set(${progress});
         volumeBar.set(${play.volume});
         if (${play.isMuted}) {
