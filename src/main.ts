@@ -3,7 +3,7 @@ import { BrowserWindow, app, ipcMain, Tray, Menu, dialog, IpcMainEvent } from "e
 import Store from 'electron-store';
 import path from 'path';
 import fs from 'fs';
-
+import { BILI_BASE } from './constants';
 
 import { isLogin, getMusicFav, waitForLogin } from './util';
 
@@ -90,7 +90,7 @@ async function createWindow () {
     }
   }
 
-  childWindow.loadURL(latestUrl || `https://www.bilibili.com/list/ml${musicFav.id}`);
+  childWindow.loadURL(latestUrl || `${BILI_BASE}/list/ml${musicFav.id}`);
   childWindow.webContents.on('dom-ready', () => {
     childWindow.webContents.executeJavaScript(content);
   });
@@ -224,7 +224,7 @@ app.whenReady().then(async () => {
   const contextMenu = Menu.buildFromTemplate([
     { label: '退出登录', click: async () => {
       childWindow.webContents.session.clearStorageData();
-      childWindow.loadURL('https://www.bilibili.com');
+      childWindow.loadURL(BILI_BASE);
       store.set('latestUrl', '');
       childWindow.show();
       let user = await isLogin();
@@ -240,7 +240,7 @@ app.whenReady().then(async () => {
           app.quit();
         }
       }
-      childWindow.loadURL(`https://www.bilibili.com/list/ml${musicFav.id}`);
+      childWindow.loadURL(`${BILI_BASE}/list/ml${musicFav.id}`);
     }},
     { label: '关闭应用', click: () => {
       mainWindow.close();

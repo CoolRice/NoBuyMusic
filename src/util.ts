@@ -1,5 +1,6 @@
 import { BrowserWindow, session } from "electron";
 import User from "./entities/User";
+import { BILI_API_BASE } from './constants';
 
 // function waitForElm(selector) {
 //     return new Promise(resolve => {
@@ -41,7 +42,7 @@ import User from "./entities/User";
 // }
 
 async function isLogin(): Promise<User | null> {
-    const res = await session.defaultSession.fetch('https://api.bilibili.com/x/web-interface/nav');
+    const res = await session.defaultSession.fetch(`${BILI_API_BASE}/x/web-interface/nav`);
     const value = await res.json();
     const { mid, uname } = value.data;
     if (value.code === 0) {
@@ -52,7 +53,7 @@ async function isLogin(): Promise<User | null> {
 }
 
 async function getMusicFav(mid: number): Promise<any> {
-    const res = await session.defaultSession.fetch(`https://api.bilibili.com/x/v3/fav/folder/created/list-all?up_mid=${mid}`);
+    const res = await session.defaultSession.fetch(`${BILI_API_BASE}/x/v3/fav/folder/created/list-all?up_mid=${mid}`);
     const value = await res.json();
     const musicFav = value?.data?.list.find((item: any) => item.title === 'NoBuyMusic');
     return musicFav;
