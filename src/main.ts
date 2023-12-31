@@ -1,33 +1,38 @@
-const { app, BrowserWindow, ipcMain, } = require('electron');
-const Store = require('electron-store');
-const path = require('path');
-const fs = require('fs');
+import { BrowserWindow, app, ipcMain, Tray, Menu, dialog, IpcMainEvent } from "electron";
 
-let mainWindow = null;
-let childWindow = null;
+import Store from 'electron-store';
+import path from 'path';
+import fs from 'fs';
 
-const gotTheLock = app.requestSingleInstanceLock()
+
+import { isLogin, getMusicFav, waitForLogin } from './util';
+
+let mainWindow: BrowserWindow;
+let childWindow: BrowserWindow;
+
+const gotTheLock = app.requestSingleInstanceLock();
 
 if (!gotTheLock) {
-  app.quit()
+  app.quit();
 } else {
-  app.on('second-instance', (event, commandLine, workingDirectory) => {
+  app.on('second-instance', () => {
     // Someone tried to run a second instance, we should focus our window.
     if (mainWindow) {
-      if (mainWindow.isMinimized()) mainWindow.restore()
-      mainWindow.focus()
+      if (mainWindow.isMinimized()) mainWindow.restore();
+      mainWindow.focus();
     }
-  })
+  });
 }
 
 function isDev() {
   return process.argv[2] == '--dev';
 }
 
-let content = fs.readFileSync(__dirname + '/' + 'bilibiliScript.js');
+const content = fs.readFileSync(__dirname + '/' + 'bilibiliScript.js').toString();
+
 let isChildWindowShowing = false;
 
-function time2Seconds(str) {
+function time2Seconds(str:string) {
   const result = str.split(':');
   if (result.length === 3) {
     return Number(result[0]) * 3600 + Number(result[1]) * 60 + Number(result[2]);
@@ -38,11 +43,11 @@ function time2Seconds(str) {
 
 const store = new Store();
 
-console.log(store.get('currentFid'))
-console.log(store.get('currentBvid'))
-console.log(store.get('latestUrl'))
+console.log(store.get('currentFid'));
+console.log(store.get('currentBvid'));
+console.log(store.get('latestUrl'));
 
-function createWindow () {
+async function createWindow () {
   mainWindow = new BrowserWindow({
     width: 350,
     height: 125,
@@ -54,9 +59,9 @@ function createWindow () {
     autoHideMenuBar: true,
     fullscreen: false,
     maximizable: false,
-  })
+  });
   if (process.platform === 'darwin') {
-    mainWindow.setWindowButtonVisibility(true)
+    mainWindow.setWindowButtonVisibility(true);
   }
 
   childWindow = new BrowserWindow({
@@ -69,10 +74,25 @@ function createWindow () {
     },
   });
 
-  const latestUrl = store.get('latestUrl');
-  childWindow.loadURL(latestUrl || 'https://www.bilibili.com')
+  const latestUrl = store.get('latestUrl') as string;
+
+  let user = await isLogin();
+  if (!user) {
+    // 未登录
+    user = await waitForLogin(childWindow);
+  }
+
+  const musicFav = await getMusicFav(user.mid);
+  if (!musicFav) {
+    const buttonId = dialog.showMessageBoxSync(mainWindow, { message: '请创建"NoBuyMusic"收藏夹并收藏视频后再启动' });
+    if (buttonId === 0) {
+      app.quit();
+    }
+  }
+
+  childWindow.loadURL(latestUrl || `https://www.bilibili.com/list/ml${musicFav.id}`);
   childWindow.webContents.on('dom-ready', () => {
-    childWindow.webContents.executeJavaScript(content)
+    childWindow.webContents.executeJavaScript(content);
   });
 
   // childWindow.once('ready-to-show', () => {
@@ -81,7 +101,7 @@ function createWindow () {
   // })
 
   // and load the index.html of the app.
-  mainWindow.loadFile('index.html')
+  mainWindow.loadFile('index.html');
 
   if (isDev()) {
     mainWindow.webContents.openDevTools({
@@ -93,9 +113,9 @@ function createWindow () {
   }
 
   let prevTitle = '&nbsp;';
+  let prevVolume: number = -1;
+  const handleMainPlayEvent = (event:IpcMainEvent, value: any) => {
 
-  const handleMainPlayEvent = (event, value) => {
-    let prevVolume;
     if ('minimize' === value.eventName) {
       mainWindow.minimize();
       return;
@@ -106,7 +126,7 @@ function createWindow () {
     }
 
     if ('SET_VOLUME' === value.eventName) {
-      const scriptString = `window.player.setVolume(${value.volumeValue});`
+      const scriptString = `window.player.setVolume(${value.volumeValue});`;
       childWindow.webContents.executeJavaScript(scriptString);
       return;
     }
@@ -121,8 +141,8 @@ function createWindow () {
     }
 
     if ('UNMUTE' === value.eventName) {
-      const targetVolume = Number.isNaN(parseInt(prevVolume)) ? 0.3 : prevVolume;
-      const scriptString = `window.player.setVolume(${targetVolume});`
+      const targetVolume = prevVolume < 0 ? 0.3 : prevVolume;
+      const scriptString = `window.player.setVolume(${targetVolume});`;
       childWindow.webContents.executeJavaScript(scriptString);
       return;
     }
@@ -134,20 +154,20 @@ function createWindow () {
     } else if (value.eventName === 'PREV') {
       childWindow.webContents.executeJavaScript(`window.player.prev();`);
     }
-  }
+  };
 
   ipcMain.on('player', handleMainPlayEvent);
 
-  const handleBiliEvent = (event, value) => {
+  const handleBiliEvent = (event: IpcMainEvent, value: any) => {
     if (value.eventName === 'status') {
       const { auth, page, play } = value.key;
       if (auth.isAuthenticated && isChildWindowShowing && !isDev()) {
         isChildWindowShowing = false;
-        childWindow.hide()
+        childWindow.hide();
       }
       if (!auth.isAuthenticated && !isChildWindowShowing) {
         isChildWindowShowing = true;
-        childWindow.show()
+        childWindow.show();
       }
       if (play.currentFid) {
         store.set('currentFid', play.currentFid);
@@ -172,9 +192,6 @@ function createWindow () {
         `;
       }
 
-      // if (play?.title?.indexOf('《') >= 0 && play.title.indexOf('《') < play.title.indexOf('》')) {
-      //   title = play.title.split('《')[1].split('》')[0];
-      // }
       updateStr += updateStr + `
         document.querySelector('#currentTime').innerHTML = '${play.currentTime || '00:00'}';
         document.querySelector('#totalTime').innerHTML = '${play.totalTime || '00:00'}';
@@ -191,27 +208,56 @@ function createWindow () {
         // playListElement.innerHTML = ${JSON.stringify(play.list)}.map((item, index) => {
         //   return '<div class="item">' + item + '</div>';
         // }).join('');
-      `
-      mainWindow.webContents.executeJavaScript(updateStr);
+      `;
+      mainWindow?.webContents.executeJavaScript(updateStr);
     }
-  }
+  };
 
   ipcMain.on('bili', handleBiliEvent);
 }
 
-app.whenReady().then(() => {
-  createWindow()
+app.whenReady().then(async () => {
+  await createWindow();
+
+  // https://www.iconarchive.com/show/yosemite-flat-icons-by-dtafalonso/Music-icon.html
+  const tray = new Tray(__dirname + '/assets/img/music.ico');
+  const contextMenu = Menu.buildFromTemplate([
+    { label: '退出登录', click: async () => {
+      childWindow.webContents.session.clearStorageData();
+      childWindow.loadURL('https://www.bilibili.com');
+      store.set('latestUrl', '');
+      childWindow.show();
+      let user = await isLogin();
+      if (!user) {
+        // 未登录
+        user = await waitForLogin(childWindow);
+      }
+
+      const musicFav = await getMusicFav(user.mid);
+      if (!musicFav) {
+        const buttonId = dialog.showMessageBoxSync(mainWindow, { message: '请创建"NoBuyMusic"收藏夹并收藏视频后再启动' });
+        if (buttonId === 0) {
+          app.quit();
+        }
+      }
+      childWindow.loadURL(`https://www.bilibili.com/list/ml${musicFav.id}`);
+    }},
+    { label: '关闭应用', click: () => {
+      mainWindow.close();
+    }}
+  ]);
+  tray.setToolTip('No Buy Music');
+  tray.setContextMenu(contextMenu);
 
   app.on('activate', function () {
-    console.log('active')
     if (BrowserWindow.getAllWindows().length === 0) {
-      childWindow = null;
+      childWindow.destroy();
       createWindow();
     }
-  })
-})
+  });
+});
 
 app.on('window-all-closed', function () {
-  if (process.platform !== 'darwin') app.quit()
-})
+  if (process.platform !== 'darwin') app.quit();
+});
 

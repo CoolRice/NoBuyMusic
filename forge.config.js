@@ -10,6 +10,7 @@ module.exports = {
     },
     {
       name: '@electron-forge/maker-zip',
+      icon: 'assets/image/music.ico'
     },
     {
       name: '@electron-forge/maker-deb',
