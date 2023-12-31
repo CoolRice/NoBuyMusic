@@ -1,0 +1,14 @@
+{
+    "compilerOptions": {
+        "outDir": "./build",
+        "module": "commonjs",
+        "allowJs": true,
+        "strict": true,
+        "esModuleInterop": true,
+        "strictNullChecks": true,
+        "target": "es2015"
+    },
+    "include": [
+        "./src/**/*"
+    ]
+}

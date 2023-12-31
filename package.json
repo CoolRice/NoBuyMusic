@@ -3,12 +3,13 @@
   "version": "0.1.0",
   "description": "NoBuyMusic",
   "productName": "NoBuyMusic",
-  "main": "main.js",
+  "main": "build/main.js",
   "scripts": {
-    "start": "electron-forge start",
-    "dev": "electron . --dev",
+    "start": "npm run compile && electron build/main.js",
+    "dev": "npm run compile && electron build/main.js --dev",
     "package": "electron-forge package",
-    "make": "electron-forge make"
+    "make": "electron-forge make",
+    "compile": "tsc --build --clean && tsc && copyfiles -f src/index.html build &&  copyfiles assets/**/* build"
   },
   "repository": "https://github.com/electron/electron-quick-start",
   "keywords": [
@@ -24,7 +25,12 @@
     "@electron-forge/maker-squirrel": "^7.2.0",
     "@electron-forge/maker-zip": "^7.2.0",
     "@electron-forge/plugin-auto-unpack-natives": "^7.2.0",
-    "electron": "^25.1.0"
+    "@typescript-eslint/eslint-plugin": "^6.16.0",
+    "@typescript-eslint/parser": "^6.16.0",
+    "copyfiles": "^2.4.1",
+    "electron": "^25.1.0",
+    "eslint": "^8.56.0",
+    "typescript": "^5.3.3"
   },
   "dependencies": {
     "electron-squirrel-startup": "^1.0.0",
